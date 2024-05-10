@@ -47,7 +47,7 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id")
     @JsonIgnore
-    private ProductCategory category;
+    private Category category;
 
     @Override
     public String toString() {
