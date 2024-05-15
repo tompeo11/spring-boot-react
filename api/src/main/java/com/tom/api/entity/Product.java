@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class Product {
     private String description;
 
     @Column(name = "unit_price")
-    private double unitPrice;
+    private BigDecimal unitPrice;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -70,7 +71,7 @@ public class Product {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return id == product.id && Double.compare(unitPrice, product.unitPrice) == 0 && unitsInStock == product.unitsInStock && Objects.equals(name, product.name) && Objects.equals(description, product.description) && Objects.equals(imageUrl, product.imageUrl) && Objects.equals(brand, product.brand) && Objects.equals(dateCreated, product.dateCreated) && Objects.equals(lastUpdated, product.lastUpdated) && Objects.equals(category, product.category);
+        return id == product.id && unitsInStock == product.unitsInStock && Objects.equals(name, product.name) && Objects.equals(description, product.description) && Objects.equals(unitPrice, product.unitPrice) && Objects.equals(imageUrl, product.imageUrl) && Objects.equals(brand, product.brand) && Objects.equals(dateCreated, product.dateCreated) && Objects.equals(lastUpdated, product.lastUpdated) && Objects.equals(category, product.category);
     }
 
     @Override

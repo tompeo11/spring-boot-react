@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
@@ -43,5 +44,22 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         return categoryMapper.toCategoryDto(categoryOptional.get());
+    }
+
+    @Override
+    public CategoryDto findByName(String name) {
+        Category category = categoryRepository.findByName(name);
+
+        if (category == null) {
+            return null;
+        }
+
+        return categoryMapper.toCategoryDto(category);
+    }
+
+    @Override
+    public Category findByNameEntity(String name) {
+
+        return categoryRepository.findByName(name);
     }
 }

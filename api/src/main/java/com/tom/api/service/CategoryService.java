@@ -8,4 +8,8 @@ import java.util.List;
 public interface CategoryService {
     List<CategoryDto> getAllCategory();
     CategoryDto getById(long id);
+
+    CategoryDto findByName(String name);
+    Category findByNameEntity(String name);
+
 }

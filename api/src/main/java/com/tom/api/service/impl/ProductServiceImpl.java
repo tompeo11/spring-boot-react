@@ -42,4 +42,9 @@ public class ProductServiceImpl implements ProductService {
 
         return productMapper.toProductDto(productOptional.get());
     }
+
+    @Override
+    public void saveProduct(Product product) {
+        productRepository.save(product);
+    }
 }

@@ -1,29 +1,31 @@
 import { useState, useEffect } from 'react'
 import Catalog from './features/catalog/Catalog'
-import Product from './Product'
+import Product from './type/Product'
+import axios from 'axios'
+import { Container } from 'react-bootstrap'
+import BasicNavbar from './ui/BasicNavbar'
+import ProductForm from './features/product/ProductForm'
 
 function App() {
   const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
     async function getProduct() {
-      const res = await fetch('http://localhost:8080/api/products/')
-      const data = await res.json()
-      setProducts(data)
+      const res = await axios.get<Product[]>('http://localhost:8080/api/products/')
+      setProducts(res.data)
     }
 
-    getProduct()
+    getProduct().catch((error) => console.log(error))
   }, [])
 
   return (
-    <div className='row'>
-      
-        {products.map((product) => (
-          <div className='col-md-3' key={product.id}>
-            <Catalog product={product} />
-          </div>
-        ))}
-    </div>
+    <>
+      <BasicNavbar />
+      <Container className='mt-3'>
+        <ProductForm />
+        {/* <Catalog products={products} /> */}
+      </Container>
+    </>
   )
 }
 
