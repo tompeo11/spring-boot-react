@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-@CrossOrigin("http://localhost:5173")
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
@@ -75,6 +74,8 @@ public class ProductController {
             imageFileName = UUID.randomUUID().toString() + "." + imageFileExt;
             Path filePath = fileFolder.resolve(imageFileName);
             Files.copy(image.getInputStream(), filePath);
+        } else {
+            imageFileName = "default.jpg";
         }
         Product newProduct = Product.builder()
                 .name(name)

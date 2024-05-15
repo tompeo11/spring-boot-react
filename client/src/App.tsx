@@ -11,7 +11,7 @@ function App() {
 
   useEffect(() => {
     async function getProduct() {
-      const res = await axios.get<Product[]>('http://localhost:8080/api/products/')
+      const res = await axios.get<Product[]>('/api/products/')
       setProducts(res.data)
     }
 
@@ -23,7 +23,7 @@ function App() {
       <BasicNavbar />
       <Container className='mt-3'>
         <ProductForm />
-        {/* <Catalog products={products} /> */}
+        <Catalog products={products} />
       </Container>
     </>
   )

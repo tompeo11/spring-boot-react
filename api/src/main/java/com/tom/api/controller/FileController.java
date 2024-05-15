@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@CrossOrigin("http://localhost:5173")
 @RestController
 @RequestMapping("/api/file")
 public class FileController {
