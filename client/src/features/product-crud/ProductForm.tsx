@@ -6,6 +6,8 @@ import { Button, Col, Row, Spinner } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { Zoom, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 type FormField = {
   name: string
@@ -74,11 +76,31 @@ export default function ProductForm() {
     await axios
       .post('/api/products', formData, config)
       .then(() => {
-        alert('Product created successfully')
+        toast.success('🦄 Add product success!', {
+          position: 'top-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+          transition: Zoom
+        })
         reset()
       })
       .catch(() => {
-        alert('Failed to create product')
+        toast.error('🦄 Add product fail!', {
+          position: 'top-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+          transition: Zoom
+        })
       })
   }
 

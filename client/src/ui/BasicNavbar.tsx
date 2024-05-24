@@ -1,34 +1,47 @@
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
+import { Switch } from '@mui/material'
+import React from 'react'
+import Nav from 'react-bootstrap/Nav'
+import Navbar from 'react-bootstrap/Navbar'
+import { NavLink } from 'react-router-dom'
+import '../ui/BasicNavbar.css'
+import { House } from 'react-bootstrap-icons'
 
-function BasicNavbar() {
-  return (
-    <Navbar expand="lg" className="bg-body-tertiary">
-      <Container>
-        <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link href="#home">Home</Nav.Link>
-            <Nav.Link href="#link">Link</Nav.Link>
-            <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-              <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
-                Another action
-              </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.4">
-                Separated link
-              </NavDropdown.Item>
-            </NavDropdown>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  );
+interface Props {
+  darkMode: boolean
+  onSetDarkMode: (isDark: boolean) => void
 }
 
-export default BasicNavbar;
+function BasicNavbar(props: Props) {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    props.onSetDarkMode(event.target.checked)
+  }
+
+  return (
+    <Navbar expand='lg' className='bg-body-secondary px-3'>
+      <Navbar.Brand href='/' className='fw-bold '>
+        <House />
+        My shop
+      </Navbar.Brand>
+      <Navbar.Toggle aria-controls='basic-navbar-nav' />
+      <Navbar.Collapse id='basic-navbar-nav'>
+        <Nav className='me-auto'>
+          <NavLink className='me-3 text-decoration-none ' to={'/'}>
+            Home
+          </NavLink>
+          <NavLink className='me-3 text-decoration-none ' to={'/contact'}>
+            Contact
+          </NavLink>
+          <NavLink className='me-3 text-decoration-none ' to={'/about'}>
+            About
+          </NavLink>
+          <NavLink className='me-3 text-decoration-none ' to={'/products'}>
+            Products
+          </NavLink>
+        </Nav>
+      </Navbar.Collapse>
+      <Switch checked={props.darkMode} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
+    </Navbar>
+  )
+}
+
+export default BasicNavbar
