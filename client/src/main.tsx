@@ -14,7 +14,7 @@ axios.interceptors.response.use(
   (error: AxiosError) => {
     switch (error.response?.status) {
       case 400:
-        toast.error(error.response?.data.message, { theme: 'colored;' })
+        toast.error(error.response?.data.message)
         break
 
       default:
