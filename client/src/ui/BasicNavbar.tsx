@@ -2,9 +2,10 @@ import { Switch } from '@mui/material'
 import React from 'react'
 import Nav from 'react-bootstrap/Nav'
 import Navbar from 'react-bootstrap/Navbar'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import '../ui/BasicNavbar.css'
-import { House } from 'react-bootstrap-icons'
+import { House, Cart } from 'react-bootstrap-icons'
+import Badge from 'react-bootstrap/Badge'
 
 interface Props {
   darkMode: boolean
@@ -39,6 +40,13 @@ function BasicNavbar(props: Props) {
           </NavLink>
         </Nav>
       </Navbar.Collapse>
+      <Link to={'/basket'} className='position-relative me-2'>
+        <Cart size={30} />
+        <Badge bg='secondary' className='position-absolute' style={{ top: -5, right: -10, borderRadius: 100 }}>
+          1
+        </Badge>
+      </Link>
+
       <Switch checked={props.darkMode} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
     </Navbar>
   )

@@ -1,13 +1,29 @@
 import Product from '../../type/Product'
-import { Col, Row } from 'react-bootstrap'
-import Card from 'react-bootstrap/Card'
+import { Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import ProductCard from './ProductCard'
 
-type props = {
-  products: Product[]
-}
+export default function ProductPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    async function getProduct() {
+      try {
+        setLoading(true)
+        const res = await axios.get<Product[]>('/api/products/')
+        setProducts(res.data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-export default function ProductPage({ products }: props) {
+    getProduct()
+  }, [])
+
   return (
     <div className='d-flex flex-column '>
       <div className='d-flex'>
@@ -17,31 +33,14 @@ export default function ProductPage({ products }: props) {
         </Link>
       </div>
 
-      <Row xs={2} md={4} className='g-4'>
-        {products.map((product, idx) => (
-          <Col key={idx}>
-            <Card>
-              <Card.Img
-                variant='top'
-                style={{ height: '240px', objectFit: 'cover' }}
-                src={`http://localhost:8080/api/file/image/${product.imageUrl}`}
-              />
-              <Card.Body>
-                <Card.Title className='name'>{product.name}</Card.Title>
-                <Card.Text className='description'>{product.description}</Card.Text>
-                <div className='d-flex justify-content-between '>
-                  <Link className='btn btn-primary ' to={'/products/' + product.id}>
-                    View
-                  </Link>
-                  <Link className='btn btn-primary' to={'/products/' + product.id}>
-                    Add to cart
-                  </Link>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
-      </Row>
+      {loading && 'Loading...'}
+      {!loading && (
+        <Row xs={2} md={4} className='g-4'>
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </Row>
+      )}
     </div>
   )
 }

@@ -1,4 +1,14 @@
-import { AlertTitle, Button, ButtonGroup, Container, Typography } from '@mui/material'
+import {
+  Alert,
+  AlertTitle,
+  Button,
+  ButtonGroup,
+  Container,
+  List,
+  ListItem,
+  ListItemText,
+  Typography
+} from '@mui/material'
 import axios from 'axios'
 import { useState } from 'react'
 
@@ -56,7 +66,18 @@ export default function AboutPage() {
         </Button>
       </ButtonGroup>
 
-      {validationErrors.length > 0 && <AlertTitle>Validation Error</AlertTitle>}
+      {validationErrors.length > 0 && (
+        <Alert severity='error'>
+          <AlertTitle>Validation Errors</AlertTitle>
+          <List>
+            {validationErrors.map((error) => (
+              <ListItem key={error}>
+                <ListItemText>{error}</ListItemText>
+              </ListItem>
+            ))}
+          </List>
+        </Alert>
+      )}
     </Container>
   )
 }

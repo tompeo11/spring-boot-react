@@ -6,6 +6,7 @@ import com.tom.api.dao.ProductRepository;
 import com.tom.api.dto.BasketDto;
 import com.tom.api.dto.BasketItemDto;
 import com.tom.api.entity.Basket;
+import com.tom.api.entity.BasketItem;
 import com.tom.api.entity.Product;
 import jakarta.persistence.NoResultException;
 import jakarta.servlet.http.Cookie;
@@ -20,7 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin(value = "http://localhost:3000/", allowCredentials = "true")
 @RequestMapping("/api/baskets")
 public class BasketController {
     private final ProductRepository productRepository;
@@ -41,22 +42,7 @@ public class BasketController {
             throw new NoResultException("Cannot find the basket");
         }
 
-        List<BasketItemDto> basketItemDtoList = basketList.get(0).getBasketItems().stream().map(item -> new BasketItemDto(
-                item.getProduct().getId(),
-                item.getProduct().getName(),
-                item.getProduct().getUnitPrice(),
-                item.getProduct().getImageUrl(),
-                item.getProduct().getBrand(),
-                item.getProduct().getCategory().getCategoryName(),
-                item.getQuantity()
-        )).collect(Collectors.toList());
-
-        BasketDto basketDto = new BasketDto();
-        basketDto.setId(basketList.get(0).getId());
-        basketDto.setBuyerId(basketList.get(0).getBuyerId());
-        basketDto.setBasketItems(basketItemDtoList);
-
-        return new ResponseEntity<>(basketDto, HttpStatus.OK);
+        return getBasketDtoResponseEntity(basketList.get(0));
     }
 
     @PostMapping
@@ -83,20 +69,57 @@ public class BasketController {
         basket.addItem(product, quantity);
         Basket returnBasket = basketRepository.save(basket);
 
-        List<BasketItemDto> basketItemDtoList = returnBasket.getBasketItems()
-                .stream().map(item -> new BasketItemDto(
-                    item.getProduct().getId(),
-                    item.getProduct().getName(),
-                    item.getProduct().getUnitPrice(),
-                    item.getProduct().getImageUrl(),
-                    item.getProduct().getBrand(),
-                    item.getProduct().getCategory().getCategoryName(),
-                    item.getQuantity()
+        return getBasketDtoResponseEntity(returnBasket);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<BasketDto> removeBasketItem(@RequestParam("productId") Long productId,
+                                                      @RequestParam("quantity") int quantity,
+                                                      @CookieValue(name = "buyerId", defaultValue = "") String buyerId) {
+        List<Basket> basketList = basketRepository.findByBuyerId(buyerId);
+
+        if (basketList.isEmpty()) {
+            throw new NoResultException("Cannot find the basket");
+        }
+
+        Basket basket = basketList.get(0);
+
+        BasketItem existingItem = basket.getBasketItems().stream()
+                .filter(i -> i.getProduct().getId() == productId)
+                .findAny()
+                .orElse(null);
+
+        if(existingItem == null) {
+            throw new NoResultException("The basket doesn't have this product");
+        }
+
+        int newQuantity = existingItem.getQuantity() - quantity;
+        existingItem.setQuantity(newQuantity);
+
+        if (newQuantity <= 0) {
+            basket.getBasketItems().remove(existingItem);
+            basketItemRepository.delete(existingItem);
+        }
+
+        Basket returnBasket = basketRepository.save(basket);
+
+        return getBasketDtoResponseEntity(returnBasket);
+    }
+
+    private static ResponseEntity<BasketDto> getBasketDtoResponseEntity(Basket basketList) {
+        List<BasketItemDto> basketItemDtoList = basketList.getBasketItems().stream().map(item -> new BasketItemDto(
+                item.getProduct().getId(),
+                item.getProduct().getName(),
+                item.getProduct().getUnitPrice(),
+                item.getProduct().getImageUrl(),
+                item.getProduct().getBrand(),
+                item.getProduct().getCategory().getCategoryName(),
+                item.getQuantity()
         )).collect(Collectors.toList());
 
         BasketDto basketDto = new BasketDto();
-        basketDto.setId(returnBasket.getId());
-        basketDto.setBuyerId(returnBasket.getBuyerId());
+        basketDto.setId(basketList.getId());
+        basketDto.setBuyerId(basketList.getBuyerId());
         basketDto.setBasketItems(basketItemDtoList);
 
         return new ResponseEntity<>(basketDto, HttpStatus.OK);

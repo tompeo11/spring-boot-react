@@ -1,40 +1,47 @@
-import { Button, Card, CardActionArea, CardActions, CardContent, CardMedia, Typography } from '@mui/material'
 import Product from '../../type/Product'
+import { Button, Col } from 'react-bootstrap'
+import Card from 'react-bootstrap/Card'
+import { useState } from 'react'
+import axios, { AxiosResponse } from 'axios'
+import { Link } from 'react-router-dom'
 
 interface Props {
   product: Product
 }
 
 export default function ProductCard(props: Props) {
+  const [loading, setLoading] = useState(false)
+  const handleAddItem = (producId: number) => {
+    setLoading(true)
+    axios
+      .post(`/api/baskets?productId=${producId}&quantity=1`)
+      .then((response: AxiosResponse) => console.log(response))
+      .catch((error) => console.log(error))
+      .finally(() => setLoading(false))
+  }
+
   return (
-    <Card sx={{ maxWidth: 345 }}>
-      <CardActionArea>
-        <CardMedia
-          component='img'
-          height='140'
-          image='/static/images/cards/contemplative-reptile.jpg'
-          alt='green iguana'
+    <Col>
+      <Card>
+        <Card.Img
+          variant='top'
+          style={{ height: '240px', objectFit: 'cover' }}
+          src={`http://localhost:8080/api/file/image/${props.product.imageUrl}`}
         />
-        <CardContent>
-          <Typography gutterBottom variant='h5' component='div'>
-            {props.product.name}
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            {props.product.description}
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            {props.product.unitPrice}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-      <CardActions>
-        <Button size='small' color='primary'>
-          Add to cart
-        </Button>
-        <Button size='small' color='primary'>
-          View
-        </Button>
-      </CardActions>
-    </Card>
+        <Card.Body>
+          <Card.Title className='name'>{props.product.name}</Card.Title>
+          <Card.Text className='description'>{props.product.description}</Card.Text>
+          <div className='d-flex justify-content-between '>
+            <Link className='btn btn-primary ' to={'/products/' + props.product.id}>
+              View
+            </Link>
+            <Button className='btn btn-primary' onClick={() => handleAddItem(props.product.id)}>
+              {loading && 'Adding...'}
+              {!loading && 'Add to cart'}
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+    </Col>
   )
 }
