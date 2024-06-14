@@ -1,4 +1,6 @@
-export interface Basket {
+import { BasketItem } from "./BasketItem"
+
+export interface BasketType {
     id: number
     buyerId: string
     basketItems: BasketItem[]

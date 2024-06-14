@@ -1,3 +1,11 @@
+import { Typography } from '@mui/material'
+import Counter from '../counter/Counter'
+
 export default function ContactPage() {
-  return <div>Contact Page</div>
+  return (
+    <>
+      <Typography variant='h2'>Sample Redux Counter</Typography>
+      <Counter />
+    </>
+  )
 }

@@ -1,9 +1,11 @@
 import Product from '../../type/Product'
 import { Button, Col } from 'react-bootstrap'
 import Card from 'react-bootstrap/Card'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import axios, { AxiosResponse } from 'axios'
 import { Link } from 'react-router-dom'
+import './product.css'
+import { StoreContext } from '../../context/StoreContext'
 
 interface Props {
   product: Product
@@ -11,11 +13,12 @@ interface Props {
 
 export default function ProductCard(props: Props) {
   const [loading, setLoading] = useState(false)
+  const { setBasket } = useContext(StoreContext)
   const handleAddItem = (producId: number) => {
     setLoading(true)
     axios
       .post(`/api/baskets?productId=${producId}&quantity=1`)
-      .then((response: AxiosResponse) => console.log(response))
+      .then((response: AxiosResponse) => setBasket(response.data))
       .catch((error) => console.log(error))
       .finally(() => setLoading(false))
   }
@@ -29,8 +32,12 @@ export default function ProductCard(props: Props) {
           src={`http://localhost:8080/api/file/image/${props.product.imageUrl}`}
         />
         <Card.Body>
-          <Card.Title className='name'>{props.product.name}</Card.Title>
-          <Card.Text className='description'>{props.product.description}</Card.Text>
+          <Card.Title id='name' className='name'>
+            {props.product.name}
+          </Card.Title>
+          <Card.Text id='description' className='description'>
+            {props.product.description}
+          </Card.Text>
           <div className='d-flex justify-content-between '>
             <Link className='btn btn-primary ' to={'/products/' + props.product.id}>
               View

@@ -59,6 +59,7 @@ public class BasketController {
             buyerId = UUID.randomUUID().toString();
             Cookie cookie = new Cookie("buyerId", buyerId);
             cookie.setMaxAge(30*24*60*60);
+            cookie.setPath("/");
             response.addCookie(cookie);
             basket = new Basket(buyerId);
         }else {
@@ -72,8 +73,70 @@ public class BasketController {
         return getBasketDtoResponseEntity(returnBasket);
     }
 
+//    @DeleteMapping
+//    public ResponseEntity<BasketDto> removeBasketItem(@RequestParam("productId") Long productId,
+//                                                      @RequestParam("quantity") int quantity,
+//                                                      @CookieValue(name = "buyerId", defaultValue = "") String buyerId) {
+//        List<Basket> basketList = basketRepository.findByBuyerId(buyerId);
+//
+//        if (basketList.isEmpty()) {
+//            throw new NoResultException("Cannot find the basket");
+//        }
+//
+//        Basket basket = basketList.get(0);
+//
+//        BasketItem existingItem = basket.getBasketItems().stream()
+//                .filter(i -> i.getProduct().getId() == productId)
+//                .findAny()
+//                .orElse(null);
+//
+//        if(existingItem == null) {
+//            throw new NoResultException("The basket doesn't have this product");
+//        }
+//
+//        int newQuantity = existingItem.getQuantity() - quantity;
+//        existingItem.setQuantity(newQuantity);
+//
+//        if (newQuantity <= 0) {
+//            basket.getBasketItems().remove(existingItem);
+//            basketItemRepository.delete(existingItem);
+//        }
+//
+//        Basket returnBasket = basketRepository.save(basket);
+//
+//        return getBasketDtoResponseEntity(returnBasket);
+//    }
+
     @DeleteMapping
     public ResponseEntity<BasketDto> removeBasketItem(@RequestParam("productId") Long productId,
+                                                      @CookieValue(name = "buyerId", defaultValue = "") String buyerId) {
+        List<Basket> basketList = basketRepository.findByBuyerId(buyerId);
+
+        if (basketList.isEmpty()) {
+            throw new NoResultException("Cannot find the basket");
+        }
+
+        Basket basket = basketList.get(0);
+
+        BasketItem existingItem = basket.getBasketItems().stream()
+                .filter(i -> i.getProduct().getId() == productId)
+                .findAny()
+                .orElse(null);
+
+        if(existingItem == null) {
+            throw new NoResultException("The basket doesn't have this product");
+        }
+
+        basket.getBasketItems().remove(existingItem);
+        basketItemRepository.delete(existingItem);
+
+        Basket returnBasket = basketRepository.save(basket);
+
+        return getBasketDtoResponseEntity(returnBasket);
+    }
+
+    @PutMapping
+    public ResponseEntity<BasketDto> updateBasketItem(@RequestParam("productId") Long productId,
                                                       @RequestParam("quantity") int quantity,
                                                       @CookieValue(name = "buyerId", defaultValue = "") String buyerId) {
         List<Basket> basketList = basketRepository.findByBuyerId(buyerId);
@@ -93,13 +156,8 @@ public class BasketController {
             throw new NoResultException("The basket doesn't have this product");
         }
 
-        int newQuantity = existingItem.getQuantity() - quantity;
-        existingItem.setQuantity(newQuantity);
-
-        if (newQuantity <= 0) {
-            basket.getBasketItems().remove(existingItem);
-            basketItemRepository.delete(existingItem);
-        }
+        existingItem.setQuantity(quantity);
+        basketItemRepository.save(existingItem);
 
         Basket returnBasket = basketRepository.save(basket);
 

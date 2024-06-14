@@ -6,6 +6,7 @@ import { Link, NavLink } from 'react-router-dom'
 import '../ui/BasicNavbar.css'
 import { House, Cart } from 'react-bootstrap-icons'
 import Badge from 'react-bootstrap/Badge'
+import { StoreContext } from '../context/StoreContext'
 
 interface Props {
   darkMode: boolean
@@ -13,6 +14,9 @@ interface Props {
 }
 
 function BasicNavbar(props: Props) {
+  const { basket } = React.useContext(StoreContext)
+  const itemCount = basket?.basketItems.reduce((sum, item) => sum + item.quantity, 0)
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     props.onSetDarkMode(event.target.checked)
   }
@@ -43,7 +47,7 @@ function BasicNavbar(props: Props) {
       <Link to={'/basket'} className='position-relative me-2'>
         <Cart size={30} />
         <Badge bg='secondary' className='position-absolute' style={{ top: -5, right: -10, borderRadius: 100 }}>
-          1
+          {itemCount}
         </Badge>
       </Link>
 
