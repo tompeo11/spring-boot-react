@@ -14,11 +14,14 @@ import NotFound from './features/error/NotFound'
 import Basket from './features/basket/Basket'
 import { StoreProvider } from './context/StoreProvider'
 import AppLayout from './ui/AppLayout'
+import { Provider } from 'react-redux'
+import { store } from './store'
 
 function App() {
   return (
-    <BrowserRouter>
-      <StoreProvider>
+    <Provider store={store}>
+      <BrowserRouter>
+        {/* <StoreProvider> */}
         <AxiosInterceptor>
           <Routes>
             <Route element={<AppLayout />}>
@@ -35,8 +38,9 @@ function App() {
             </Route>
           </Routes>
         </AxiosInterceptor>
-      </StoreProvider>
-    </BrowserRouter>
+        {/* </StoreProvider> */}
+      </BrowserRouter>
+    </Provider>
   )
 }
 

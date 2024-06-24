@@ -4,19 +4,21 @@ import Table from 'react-bootstrap/Table'
 import axios from 'axios'
 import { Plus, Dash } from 'react-bootstrap-icons'
 import { StoreContext } from '../../context/StoreContext'
-import { Paper, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, IconButton } from '@mui/material'
-import Modal from 'react-bootstrap/Modal'
+import {
+  Paper,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Typography,
+  IconButton
+} from '@mui/material'
 import { blue } from '@mui/material/colors'
-import { removeBasketItem, setBasketItem, updateBasketItem } from './basketSlice'
-import { useDispatch, useSelector } from 'react-redux'
-import { Button } from 'react-bootstrap'
-import { IoIosAddCircle } from 'react-icons/io'
-import { IoIosRemoveCircle } from 'react-icons/io'
 
 function Basket() {
-  const basket = useSelector((state) => state.basket.basket)
-  const dispatch = useDispatch()
-
+  const { basket, removeItem, setBasket, updateItem } = useContext(StoreContext)
   const [loading, setLoading] = useState(false)
 
   const handleUpdateQuantity = async (productId: number, quantity: number) => {
@@ -25,7 +27,7 @@ function Basket() {
         return
       }
       const res = await axios.put<BasketType>(`/api/baskets?productId=${productId}&quantity=${quantity}`)
-      dispatch(updateBasketItem({ productId, quantity }))
+      updateItem(productId, quantity)
     } catch (error) {
       console.log(error)
     }
@@ -34,21 +36,11 @@ function Basket() {
   const handleDeleteBasket = async (productId: number) => {
     try {
       const res = await axios.delete<BasketType>(`/api/baskets?productId=${productId}`)
-      dispatch(removeBasketItem(productId))
-      dispatch(setBasketItem(res.data))
-      setShow(false)
+      setBasket(res.data)
+      removeItem(productId)
     } catch (error) {
       console.log(error)
     }
-  }
-
-  const [show, setShow] = useState(false)
-  const [deleteId, setDeleteId] = useState(0)
-
-  const handleClose = () => setShow(false)
-  const handleShow = (productId: number) => {
-    setShow(true)
-    setDeleteId(productId)
   }
 
   return (
@@ -95,14 +87,14 @@ function Basket() {
                       sx={{ marginRight: 1 }}
                       onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
                     >
-                      <IoIosRemoveCircle />
+                      <Dash size={20} />
                     </IconButton>
                     {item.quantity}
                     <IconButton
                       sx={{ marginLeft: 1 }}
                       onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
                     >
-                      <IoIosAddCircle />
+                      <Plus size={20} />
                     </IconButton>
                   </TableCell>
                   <TableCell>
@@ -112,7 +104,7 @@ function Basket() {
                     <Typography variant='body2'>${(item.quantity * item.unitPrice).toFixed(2)}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleShow(item.productId)}>Remove</Button>
+                    <Button onClick={() => handleDeleteBasket(item.productId)}>Remove</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -136,21 +128,6 @@ function Basket() {
           </TableBody>
         </Table>
       </TableContainer>
-
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm delete</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure comfirm delete item!</Modal.Body>
-        <Modal.Footer>
-          <Button variant='secondary' onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant='danger' onClick={() => handleDeleteBasket(deleteId)}>
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </>
   )
 }

@@ -1,12 +1,12 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { fetchCount } from './counterAPI'
 
-export interface CounterSlice {
+export interface catalogSlice {
   value: number
   status: 'idle' | 'loading' | 'fail'
 }
 
-const initialState: CounterSlice = {
+const initialState: catalogSlice = {
   value: 0,
   status: 'idle'
 }
@@ -15,6 +15,12 @@ export const incrementAsync = createAsyncThunk('counter/fetchCount', async (amou
   const res = await fetchCount(amount)
   return res.data
 })
+
+
+export const fetchProductByIdThunk = createAsyncThunk('counter/fetchCount', async (amount: number) => {
+    const res = await fetchCount(amount)
+    return res.data
+  })
 
 export const counterSlice = createSlice({
   name: 'counter',
@@ -42,6 +48,18 @@ export const counterSlice = createSlice({
       .addCase(incrementAsync.rejected, (state) => {
         state.status = 'fail'
       })
+
+    builder.addCase(fetchProductByIdThunk.pending, (state, action) => {
+        state.status = 'loadingFetchProductsById'
+    })
+    builder.addCase(fetchProductByIdThunk.fulfilled, (state) => {
+        state.status = 'idle'
+        state.productLoad = true
+        productAdapter.upsertOne(state, action.payload)
+    })
+    builder.addCase(fetchProductByIdThunk.rejected, (state) => {
+        state.status = 'loadingFetchProductsById'
+    })
   }
 })
 

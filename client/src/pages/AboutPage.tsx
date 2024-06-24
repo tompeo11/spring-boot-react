@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 import { useState } from 'react'
+import { FaHouseChimney } from 'react-icons/fa6'
 
 export default function AboutPage() {
   const [validationErrors, setValidationErrors] = useState<String[]>([])
@@ -48,10 +49,10 @@ export default function AboutPage() {
 
   return (
     <Container>
+      <FaHouseChimney />
       <Typography gutterBottom variant='h2'>
         Testing Error message
       </Typography>
-
       <ButtonGroup fullWidth>
         <Button variant='contained' onClick={handleValidateError}>
           Test Validation Error
@@ -65,7 +66,6 @@ export default function AboutPage() {
           Test Error 500
         </Button>
       </ButtonGroup>
-
       {validationErrors.length > 0 && (
         <Alert severity='error'>
           <AlertTitle>Validation Errors</AlertTitle>

@@ -1,3 +1,5 @@
+import { Typography } from '@mui/material'
+
 export default function HomePage() {
-  return <div>HomePage</div>
+  return <Typography variant='h2'>Homepage</Typography>
 }

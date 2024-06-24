@@ -6,19 +6,23 @@ import axios, { AxiosResponse } from 'axios'
 import { Link } from 'react-router-dom'
 import './product.css'
 import { StoreContext } from '../../context/StoreContext'
+import { useDispatch } from 'react-redux'
+import { setBasketItem } from '../basket/basketSlice'
 
 interface Props {
   product: Product
 }
 
 export default function ProductCard(props: Props) {
+  const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
-  const { setBasket } = useContext(StoreContext)
+  // const { setBasket } = useContext(StoreContext)
   const handleAddItem = (producId: number) => {
     setLoading(true)
     axios
       .post(`/api/baskets?productId=${producId}&quantity=1`)
-      .then((response: AxiosResponse) => setBasket(response.data))
+      // .then((response: AxiosResponse) => setBasket(response.data))
+      .then((response: AxiosResponse) => dispatch(setBasketItem(response.data)))
       .catch((error) => console.log(error))
       .finally(() => setLoading(false))
   }
