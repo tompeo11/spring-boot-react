@@ -1,67 +1,66 @@
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { fetchCount } from './counterAPI'
-
-export interface catalogSlice {
-  value: number
-  status: 'idle' | 'loading' | 'fail'
-}
-
-const initialState: catalogSlice = {
-  value: 0,
-  status: 'idle'
-}
-
-export const incrementAsync = createAsyncThunk('counter/fetchCount', async (amount: number) => {
-  const res = await fetchCount(amount)
-  return res.data
-})
+import { createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import Product from "../../type/Product";
 
 
-export const fetchProductByIdThunk = createAsyncThunk('counter/fetchCount', async (amount: number) => {
-    const res = await fetchCount(amount)
-    return res.data
-  })
+export const productAdapter = createEntityAdapter<Product>();
 
-export const counterSlice = createSlice({
-  name: 'counter',
-  initialState,
-  reducers: {
-    increment: (state) => {
-      state.value += 1
-    },
-    decrement: (state) => {
-      state.value -= 1
-    },
-    incrementByNumber: (state, action: PayloadAction) => {
-      state.value += action.payload
+export const fetchProductThunk = createAsyncThunk<Product[]>(
+    'catalog/fetchProducts',
+    async () => {
+        try {
+            const response = await axios.get('products');
+            return response.data;
+        } catch (err) {
+            console.log(err);
+        }
     }
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(incrementAsync.pending, (state) => {
-        state.status = 'loading'
-      })
-      .addCase(incrementAsync.fulfilled, (state, action) => {
-        state.value += action.payload
-        state.status = 'idle'
-      })
-      .addCase(incrementAsync.rejected, (state) => {
-        state.status = 'fail'
-      })
+);
 
-    builder.addCase(fetchProductByIdThunk.pending, (state, action) => {
-        state.status = 'loadingFetchProductsById'
-    })
-    builder.addCase(fetchProductByIdThunk.fulfilled, (state) => {
-        state.status = 'idle'
-        state.productLoad = true
-        productAdapter.upsertOne(state, action.payload)
-    })
-    builder.addCase(fetchProductByIdThunk.rejected, (state) => {
-        state.status = 'loadingFetchProductsById'
-    })
-  }
-})
 
-export const { increment, decrement, incrementByNumber } = counterSlice.actions
-export default counterSlice.reducer
+export const fetchProductByIdThunk = createAsyncThunk<Product, number>(
+    'catalog/fetchProductsById',
+    async (productId) => {
+        try {
+            const response = await axios.get(`products/${productId}`);
+            return response.data;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+);
+
+
+export const catalogSlice = createSlice({
+    name: 'catalog',
+    initialState: productAdapter.getInitialState({
+        status: 'idle',
+        productLoad: false
+    }),
+    reducers: {},
+    extraReducers: (builder) => {
+        builder.addCase(fetchProductThunk.pending, (state, action) => {
+            state.status = 'loadingFetchProducts';
+        });
+        builder.addCase(fetchProductThunk.fulfilled, (state, action) => {
+            state.status = 'idle';
+            state.productLoad = true;
+            productAdapter.setAll(state, action.payload);
+        });
+        builder.addCase(fetchProductThunk.rejected, (state, action) => {
+            state.status = 'idle';
+        });
+
+        builder.addCase(fetchProductByIdThunk.pending, (state, action) => {
+            state.status = 'loadingFetchProductsById';
+        });
+        builder.addCase(fetchProductByIdThunk.fulfilled, (state, action) => {
+            state.status = 'idle';
+            state.productLoad = true;
+            productAdapter.upsertOne(state, action.payload);
+        });
+        builder.addCase(fetchProductByIdThunk.rejected, (state, action) => {
+            state.status = 'idle';
+        });
+    }
+});
