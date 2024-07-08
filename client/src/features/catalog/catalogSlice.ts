@@ -30,12 +30,20 @@ export const fetchProductByIdThunk = createAsyncThunk<Product, number>(
     }
 );
 
+// export const fetchBrandAndCategoryForFilterThunk = createAsyncThunk<any>(
+//     'catalog/fetchBrandAndCategoryForFilter',
+//     async (productId) => {}
+// )
+
 
 export const catalogSlice = createSlice({
     name: 'catalog',
     initialState: productAdapter.getInitialState({
         status: 'idle',
-        productLoad: false
+        productLoad: false,
+        brands: [],
+        categories: [],
+        filtersLoaded: false
     }),
     reducers: {},
     extraReducers: (builder) => {

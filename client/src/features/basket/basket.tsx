@@ -139,7 +139,7 @@ function Basket() {
         <Modal.Header closeButton>
           <Modal.Title>Confirm delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure comfirm delete item!</Modal.Body>
+        <Modal.Body>Are you sure confirm delete item!</Modal.Body>
         <Modal.Footer>
           <Button variant='secondary' onClick={handleClose}>
             Close

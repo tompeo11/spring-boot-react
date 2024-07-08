@@ -4,7 +4,6 @@ import ProductDetail from './features/catalog/ProductDetail'
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
-import Catalog from './features/catalog/Catalog'
 import ProductForm from './features/product-crud/ProductForm'
 import './index.css'
 import { AxiosInterceptor } from './interceptor/AxiosInterceptor'
@@ -16,6 +15,7 @@ import { StoreProvider } from './context/StoreProvider'
 import AppLayout from './ui/AppLayout'
 import { Provider } from 'react-redux'
 import { store } from './store'
+import Catalog from './features/catalog/Catalog'
 
 function App() {
   return (

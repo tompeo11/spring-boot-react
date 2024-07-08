@@ -1,5 +1,6 @@
 package com.tom.api.controller;
 
+import com.tom.api.dao.CategoryRepository;
 import com.tom.api.dao.ProductRepository;
 import com.tom.api.dao.ProductSpecification;
 import com.tom.api.dto.PageInfo;
@@ -37,12 +38,14 @@ public class ProductController {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final ProductSpecification productSpecification;
+    private final CategoryRepository categoryRepository;
 
-    public ProductController(ProductService productService, CategoryService categoryService, ProductRepository productRepository, ProductSpecification productSpecification) {
+    public ProductController(ProductService productService, CategoryService categoryService, ProductRepository productRepository, ProductSpecification productSpecification, CategoryRepository categoryRepository) {
         this.productService = productService;
         this.categoryService = categoryService;
         this.productRepository = productRepository;
         this.productSpecification = productSpecification;
+        this.categoryRepository = categoryRepository;
     }
 
     @GetMapping({"/", ""})
@@ -143,6 +146,18 @@ public class ProductController {
         Map<String, Object> res = new HashMap<>();
         res.put("data", returnDtoList);
         res.put("page", myPage);
+
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-filter")
+    public ResponseEntity<Map<String, Object>> getProductFilter() {
+        List<String> brands = productRepository.getBrand();
+        List<String> categories = categoryRepository.getCategoryName();
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("brands", brands);
+        res.put("categories", categories);
 
         return new ResponseEntity<>(res, HttpStatus.OK);
     }

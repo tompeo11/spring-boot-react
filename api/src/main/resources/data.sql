@@ -50,3 +50,13 @@ VALUES ('Beginning Programming All-in-One Desk Reference For Dummies', 'Beginnin
 INSERT INTO product (name, description, image_url, units_in_stock, unit_price, date_created, category_id, brand)
 VALUES ('Machine Learning: 4 Books in 1: A Complete Overview for Beginners to Master the Basics of Python Programming and Understand How to Build Artificial Intelligence Through Data Science', 'Created with the beginner in mind, this powerful bundle delves into the fundamentals behind Python and machine learning, from basic code and mathematical formulas to complex neural networks and ensemble modeling. Inside, you’ll discover everything you need to know to get started with Python and machine learning and begin your journey to success!',
         'BOOK-PROGRAMMING-1011.jpg',100,35.01, NOW(), 4, 'Samuel Hack');
+
+INSERT INTO role(name)
+    VALUES ('ADMIN'), ('MANAGER'), ('USER');
+
+INSERT INTO user(first_name, last_name, username, email, password,
+                            is_active, is_lock, avatar_url)
+VALUES ('admin', 'admin', 'admin', 'admin@gmail.com', '123456', 1, 0, 'default.jpg');
+
+INSERT INTO user_role(user_role.user_id, user_role.role_id)
+VALUES (1, 1), (1, 2), (1, 3) ;
