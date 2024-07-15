@@ -34,11 +34,11 @@ export default function Counter() {
   return (
     <>
       <div className={styles.row}>
-        <Button className={styles.button} aria-label='Decrement value' onClick={handleDecrement}>
+        <Button variant='contained' className={styles.button} aria-label='Decrement value' onClick={handleDecrement}>
           -
         </Button>
         <span className={styles.value}>{count}</span>
-        <Button className={styles.button} aria-label='Increment value' onClick={handleIncrement}>
+        <Button variant='contained' className={styles.button} aria-label='Increment value' onClick={handleIncrement}>
           +
         </Button>
       </div>
@@ -50,10 +50,15 @@ export default function Counter() {
           value={number}
           onChange={(event) => setNumber(event.target.value)}
         ></input>
-        <Button className={styles.button} aria-label='Submit value' onClick={handleIncrementByNumber}>
+        <Button
+          variant='contained'
+          className={styles.button}
+          aria-label='Submit value'
+          onClick={handleIncrementByNumber}
+        >
           Submit
         </Button>
-        <Button className={styles.asyncButton} onClick={handleIncrementAsync}>
+        <Button variant='contained' className={styles.asyncButton} onClick={handleIncrementAsync}>
           Add async
         </Button>
       </div>

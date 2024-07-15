@@ -20,7 +20,7 @@ export const addBasketItemThunk = createAsyncThunk<BasketType, { productId: numb
   'basket/addBasketItem',
   async ({ productId, quantity = 1 }, thunkAPI) => {
     try {
-      const response = await axios.post(`baskets?productId=${productId}&quantity=${quantity}`, {})
+      const response = await axios.post(`/api/baskets?productId=${productId}&quantity=${quantity}`, {})
       return response.data
     } catch (err: any) {
       console.log(err)

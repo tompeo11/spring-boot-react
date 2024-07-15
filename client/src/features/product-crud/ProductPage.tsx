@@ -1,28 +1,43 @@
-import Product from '../../type/Product'
-import { Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
-import ProductCard from './ProductCard'
+import { useEffect } from 'react'
+import ProductCard from '../catalog/ProductCard'
+import { useDispatch, useSelector } from 'react-redux'
+import { store } from '../../store'
+import {
+  fetchBrandAndCategoryForFilterThunk,
+  fetchProductThunk,
+  productAdapter,
+  setPageNumber,
+  setProductParams
+} from '../catalog/catalogSlice'
+import { FormControl, FormControlLabel, FormLabel, Grid, Paper, Radio, RadioGroup, TextField } from '@mui/material'
+import PaginationComponent from '../../layout/PaginationComponent'
+import CheckboxButton from '../../layout/CheckboxButton'
+
+const sortOptions = [
+  { value: 'name', label: 'Alphabetical' },
+  { value: 'priceAsc', label: 'Price - Low to High' },
+  { value: 'priceDesc', label: 'Price - High to Low' }
+]
 
 export default function ProductPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(false)
-  useEffect(() => {
-    async function getProduct() {
-      try {
-        setLoading(true)
-        const res = await axios.get<Product[]>('/api/products/')
-        setProducts(res.data)
-      } catch (error) {
-        console.log(error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const products = productAdapter.getSelectors().selectAll(store.getState().catalog)
+  const dispatch = useDispatch()
+  const { productLoad, filtersLoaded, productParams, pagination } = useSelector((state: any) => state.catalog)
+  const brands = useSelector((state: any) => state.catalog.brands)
+  const categories = useSelector((state: any) => state.catalog.categories)
 
-    getProduct()
-  }, [])
+  useEffect(() => {
+    if (!productLoad) {
+      store.dispatch(fetchProductThunk())
+    }
+  }, [productLoad])
+
+  useEffect(() => {
+    if (!filtersLoaded) {
+      store.dispatch(fetchBrandAndCategoryForFilterThunk())
+    }
+  }, [filtersLoaded])
 
   return (
     <div className='d-flex flex-column '>
@@ -33,14 +48,68 @@ export default function ProductPage() {
         </Link>
       </div>
 
-      {loading && 'Loading...'}
-      {!loading && (
-        <Row xs={2} md={4} className='g-4'>
+      {/* {!productLoad && 'Loading...'}
+      {productLoad && ( */}
+      <Grid container spacing={4}>
+        <Grid item xs={3}>
+          <Paper sx={{ mb: 2 }}>
+            <TextField
+              label='Search product'
+              variant='outlined'
+              fullWidth
+              value={productParams.name || ''}
+              onChange={(e) => store.dispatch(setProductParams({ name: e.target.value }))}
+            />
+          </Paper>
+
+          <Paper sx={{ mb: 2, p: 2 }}>
+            <FormControl>
+              <FormLabel id='radio-buttons'>Sort</FormLabel>
+              <RadioGroup
+                aria-labelledby='radio-buttons'
+                defaultValue='name'
+                value={productParams.sort || 'name'}
+                onChange={(e) => store.dispatch(setProductParams({ sort: e.target.value }))}
+              >
+                {sortOptions.map(({ value, label }) => (
+                  <FormControlLabel value={value} label={label} key={value} control={<Radio />} />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          </Paper>
+          <Paper sx={{ mb: 2, p: 2 }}>
+            <CheckboxButton
+              items={categories}
+              currentChecked={productParams.categories}
+              onChange={(items: string[]) => store.dispatch(setProductParams({ categories: items }))}
+            />
+          </Paper>
+          <Paper sx={{ mb: 2, p: 2 }}>
+            <CheckboxButton
+              items={brands}
+              currentChecked={productParams.brands}
+              onChange={(items: string[]) => store.dispatch(setProductParams({ brands: items }))}
+            />
+          </Paper>
+        </Grid>
+        <Grid container item xs={9}>
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <Grid key={product.id} item xs={4}>
+              <ProductCard key={product.id} product={product} />
+            </Grid>
           ))}
-        </Row>
-      )}
+        </Grid>
+
+        <Grid item xs={3} />
+
+        <Grid item xs={9}>
+          <PaginationComponent
+            pagination={pagination}
+            onPageChange={(page: number) => store.dispatch(setPageNumber({ pageNumber: page }))}
+          />
+        </Grid>
+      </Grid>
+      {/* )} */}
     </div>
   )
 }

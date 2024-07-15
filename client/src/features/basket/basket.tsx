@@ -2,12 +2,21 @@ import { useState, useContext } from 'react'
 import { BasketType } from '../../type/Basket'
 import Table from 'react-bootstrap/Table'
 import axios from 'axios'
-import { Paper, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, IconButton } from '@mui/material'
+import {
+  Paper,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  IconButton,
+  Button
+} from '@mui/material'
 import Modal from 'react-bootstrap/Modal'
 import { blue } from '@mui/material/colors'
 import { removeBasketItem, setBasketItem, updateBasketItem } from './basketSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button } from 'react-bootstrap'
 import { IoIosAddCircle } from 'react-icons/io'
 import { IoIosRemoveCircle } from 'react-icons/io'
 
@@ -89,19 +98,21 @@ function Basket() {
                     <Typography variant='body2'>Brand: {item.brand}</Typography>
                   </TableCell>
                   <TableCell align='cebter'>
-                    <IconButton
-                      sx={{ marginRight: 1 }}
+                    <Button
+                      variant='contained'
+                      sx={{ marginRight: 1, borderRadius: 100 }}
                       onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
                     >
                       <IoIosRemoveCircle />
-                    </IconButton>
+                    </Button>
                     {item.quantity}
-                    <IconButton
-                      sx={{ marginLeft: 1 }}
+                    <Button
+                      variant='contained'
+                      sx={{ marginLeft: 1, borderRadius: 100 }}
                       onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
                     >
                       <IoIosAddCircle />
-                    </IconButton>
+                    </Button>
                   </TableCell>
                   <TableCell>
                     <Typography variant='body2'>{item.unitPrice}</Typography>
@@ -110,7 +121,9 @@ function Basket() {
                     <Typography variant='body2'>${(item.quantity * item.unitPrice).toFixed(2)}</Typography>
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleShow(item.productId)}>Remove</Button>
+                    <Button variant='contained' className='btn btn-warning' onClick={() => handleShow(item.productId)}>
+                      Remove
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

@@ -34,9 +34,9 @@ function BasicNavbar(props: Props) {
         .get('/api/baskets')
         .then((response: AxiosResponse) => dispatch(setBasketItem(response.data)))
         .catch((err) => console.log(err))
-        .finally(() => setLoading(false))
+      // .finally(() => setLoading(false))
     } else {
-      setLoading(false)
+      // setLoading(false)
     }
   }, [dispatch])
 
@@ -71,11 +71,6 @@ function BasicNavbar(props: Props) {
       </Link>
 
       <Switch checked={props.darkMode} onChange={handleChange} inputProps={{ 'aria-label': 'controlled' }} />
-
-      <Link>
-        <Button>Login</Button>
-        <Button>Register</Button>
-      </Link>
     </Navbar>
   )
 }

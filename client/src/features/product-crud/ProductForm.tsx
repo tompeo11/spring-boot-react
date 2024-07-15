@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react'
 import Form from 'react-bootstrap/Form'
 import Category from '../../type/Category'
 import axios from 'axios'
-import { Button, Col, Row, Spinner } from 'react-bootstrap'
+import { Button, Spinner } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Zoom, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { Grid, MenuItem, TextField, Typography, styled } from '@mui/material'
-import { CloudUpload } from 'react-bootstrap-icons'
+import { Grid, MenuItem, TextField, Typography } from '@mui/material'
 
 type FormField = {
   name: string

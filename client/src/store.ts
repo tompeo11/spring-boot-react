@@ -11,3 +11,5 @@ export const store = configureStore({
         catalog: catalogSlice.reducer
     }
 })
+
+export type RootState = ReturnType<typeof store.getState>;

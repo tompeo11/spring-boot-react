@@ -1,17 +1,17 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Product from '../../type/Product'
-import { Button, Col, Image, Row } from 'react-bootstrap'
-import { productAdapter } from './catalogSlice'
 import { useDispatch } from 'react-redux'
 import { setBasketItem } from '../basket/basketSlice'
+import { Button, Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material'
 
 export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null)
   const params = useParams()
   const id = params.productId
 
+  const navigate = useNavigate()
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(false)
   const handleAddItem = (producId: number) => {
@@ -44,49 +44,43 @@ export default function ProductDetail() {
   }
 
   return (
-    <>
-      <Row>
-        <h1>Product details</h1>
-        <Col xs={8}>
-          <div className='mb-4 '>
-            <span>Name: </span>
-            {product.categoryName}
-          </div>
-          <div className='mb-4 '>
-            <span>Description: </span>
-            {product.description}
-          </div>
-          <div className='mb-4 '>
-            <span>Brand: </span>
-            {product.brand}
-          </div>
-          <div className='mb-4 '>
-            <span>Category: </span>
-            {product.categoryName}
-          </div>
-          <div className='mb-4 '>
-            <span>Unit price: </span>
-            {product.unitPrice}
-          </div>
-        </Col>
-        <Col>
-          <Image
-            variant='top'
-            style={{ height: '500px', width: '375px' }}
-            src={`http://localhost:8080/api/file/image/${product.imageUrl}`}
-          />
-        </Col>
-      </Row>
-
-      <div>
-        <Button className='btn btn-primary mr-2' onClick={() => handleAddItem(product.id)}>
-          {loading && 'Adding...'}
-          {!loading && 'Add to cart'}
-        </Button>
-        <Link to={'/products'} className='btn btn-primary '>
+    <Grid container spacing={6}>
+      <Grid item xs={4}>
+        <img src={`http://localhost:8080/api/file/image/${product.imageUrl}`} alt={`${product.name}`} />
+      </Grid>
+      <Grid item xs={8}>
+        <Typography variant='h3'>{product.name}</Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Typography variant='h4' color='secondary' sx={{ mb: 4 }}>
+          ${product.unitPrice.toFixed(2)}
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <TableContainer>
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Description</TableCell>
+                <TableCell>{product.description}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Type</TableCell>
+                <TableCell>{product.categoryName}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Author</TableCell>
+                <TableCell>{product.brand}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Quantity in stock</TableCell>
+                <TableCell>{product.unitsInStock}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <Button variant='contained' onClick={() => navigate(-1)}>
           Go back
-        </Link>
-      </div>
-    </>
+        </Button>
+      </Grid>
+    </Grid>
   )
 }

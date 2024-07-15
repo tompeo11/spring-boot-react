@@ -16,6 +16,7 @@ export default function ProductCard(props: Props) {
   return (
     <Card sx={{ maxWidth: 345 }}>
       <CardHeader
+        id='name'
         sx={{ height: 72.03 }}
         avatar={
           <Avatar sx={{ backgroundColor: 'secondary.main' }}>{props.product.category.charAt(0).toUpperCase()}</Avatar>
@@ -44,7 +45,7 @@ export default function ProductCard(props: Props) {
         >
           Add to cart
         </LoadingButton>
-        <Button size='small' component={Link} to={`/catalog/${props.product.id}`}>
+        <Button size='small' component={Link} to={`/products/${props.product.id}`}>
           View
         </Button>
       </CardActions>

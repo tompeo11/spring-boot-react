@@ -1,198 +1,154 @@
 package com.tom.api.service.impl;
 
+import com.tom.api.constant.FileConstant;
 import com.tom.api.dao.RoleRepository;
 import com.tom.api.dao.UserRepository;
-import com.tom.api.dto.UserDto;
-import com.tom.api.entity.Role;
-import com.tom.api.entity.User;
-import com.tom.api.mapper.UserMapper;
+import com.tom.api.entity.domain.User;
+import com.tom.api.entity.domain.UserPrincipal;
+import com.tom.api.exception.CustomRuntimeException;
+import com.tom.api.service.EmailService;
 import com.tom.api.service.UserService;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MimeTypeUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.Date;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 @Service
-public class UserServiceImpl implements UserService {
+@Transactional
+@Qualifier("myUserDetailsService")
+public class UserServiceImpl implements UserService, UserDetailsService {
+    private Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final EmailService emailService;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.emailService = emailService;
     }
 
     @Override
-    public List<UserDto> getAllUser() {
-        return userRepository
-                .findAll()
-                .stream()
-                .map(this::toDto)
-                .toList();
-    }
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findUserByUsername(username);
 
-    @Override
-    public UserDto getUserById(long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found!"));
-        return this.toDto(user);
-    }
+        if (user == null) {
+            LOGGER.error("User not found by username: " + username);
+            throw new RuntimeException("User not found by username: " + username);
+        }else {
+            user.setLastLoginDateDisplay(user.getLastLoginDate());
+            user.setLastLoginDate(new Date());
+            userRepository.save(user);
 
-    @Override
-    public UserDto addUser(UserDto userDto) throws IOException {
-        User user = this.toEntity(userDto);
-
-        user.setActive(userDto.getStringIsActive().equals("true"));
-        user.setLock(userDto.getStringIsLock().equals("true"));
-
-        List<Role> roles = getRoleList(userDto.getRoles());
-        user.setRoles(roles);
-
-        MultipartFile image = userDto.getImage();
-
-        if (image != null) {
-            String avatarUrl = addImage(image);
-            user.setAvatarUrl(avatarUrl);
-        } else {
-            user.setAvatarUrl("default.png");
+            UserPrincipal userPrincipal = new UserPrincipal(user);
+            return userPrincipal;
         }
+    }
+
+    @Override
+    public User addNewUser(User user, String[] role, MultipartFile profileImage) throws IOException {
+        String password = RandomStringUtils.randomAlphabetic(10);
+
+        user.setUserId(RandomStringUtils.randomNumeric(12));
+        user.setJoinDate(new Date());
+        user.setPassword(password);
+        user.setRoles(Arrays.stream(role).map(roleRepository::findRoleByName).collect(Collectors.toSet()));
+        user.setAuthorities(Arrays.stream(role).map(roleRepository::findRoleByName)
+                .flatMap(ro -> ro.getAuthorities().stream()).collect(Collectors.toSet()));
+        user.setProfileImageUrl(ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(FileConstant.DEFAULT_USER_IMAGE_PATH + user.getUsername()).toUriString());
 
         userRepository.save(user);
-        return this.toDto(user);
+
+        saveProfileImage(user, profileImage);
+
+        LOGGER.info("Random password: " + password);
+
+        return user;
     }
 
     @Override
-    public UserDto updateUser(long id, UserDto userDto) throws IOException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.setFirstName(userDto.getFirstName());
-
-        user.setLastName(userDto.getLastName());
-
-        user.setUserName(userDto.getUserName());
-
-        user.setEmail(userDto.getEmail());
-
-        user.setPassword(userDto.getPassword());
-
-        user.setActive(userDto.getStringIsActive().equals("true"));
-
-        user.setLock(userDto.getStringIsLock().equals("true"));
-
-        List<Role> roles = getRoleList(userDto.getRoles());
-        user.setRoles(roles);
-
-        if (userDto.getImage() != null) {
-            deleteImage(user.getAvatarUrl());
-            String avatarUrl = addImage(userDto.getImage());
-            user.setAvatarUrl(avatarUrl);
-        }
+    public User updateUser(User user, String[] role, MultipartFile profileImage) throws IOException {
+        user.setRoles(Arrays.stream(role).map(roleRepository::findRoleByName).collect(Collectors.toSet()));
+        user.setAuthorities(Arrays.stream(role).map(roleRepository::findRoleByName)
+                .flatMap(ro -> ro.getAuthorities().stream()).collect(Collectors.toSet()));
 
         userRepository.save(user);
-        return this.toDto(user);
+        saveProfileImage(user, profileImage);
+
+        return user;
     }
 
     @Override
-    public void deleteUser(long id) throws IOException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void resetPassword(String email) throws CustomRuntimeException {
+        User user = userRepository.findUserByEmail(email);
 
-        user.getRoles().clear();
-
-        deleteImage(user.getAvatarUrl());
-
-        userRepository.delete(user);
-    }
-
-    private UserDto toDto(User user) {
-        String roles = user.getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.joining(", "));
-
-
-        return UserDto.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .userName(user.getUserName())
-                .email(user.getEmail())
-                .password(user.getPassword())
-                .isActive(user.isActive())
-                .isLock(user.isLock())
-                .avatarUrl(user.getAvatarUrl())
-                .roles(roles)
-                .build();
-    }
-
-    private User toEntity(UserDto userDto) {
-        return User.builder()
-                .id(userDto.getId())
-                .firstName(userDto.getFirstName())
-                .lastName(userDto.getLastName())
-                .userName(userDto.getUserName())
-                .email(userDto.getEmail())
-                .password(userDto.getPassword())
-                .isActive(userDto.isActive())
-                .isLock(userDto.isLock())
-                .avatarUrl(userDto.getAvatarUrl())
-                .build();
-    }
-
-    private String addImage(MultipartFile image) throws IOException {
-        String imageFileExtension = image.getContentType();
-
-        List<String> allowedExtensions = Arrays.asList(MimeTypeUtils.IMAGE_JPEG_VALUE, MimeTypeUtils.IMAGE_PNG_VALUE);
-        if (!allowedExtensions.contains(imageFileExtension)) {
-            throw new RuntimeException("Only PNG and JPEG images are allowed");
+        if (user == null) {
+            throw new CustomRuntimeException("No user found for the email: " + email);
         }
 
-        Path fileFolder = Path.of("upload/images/profile");
-
-        if (!Files.exists(fileFolder)) {
-            Files.createDirectories(fileFolder);
-        }
-
-        String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-        Path filePath = fileFolder.resolve(fileName);
-        Files.copy(image.getInputStream(), filePath);
-
-        return fileName;
+        String password = RandomStringUtils.randomAlphabetic(10);
+        user.setPassword(password);
+        userRepository.save(user);
+        LOGGER.info("Reset password: " + password);
+        emailService.sendSimpleMessage(
+                user.getEmail(),
+                "Your new password",
+                "Hello " + user.getFirstName() + "\n\nYour new password is " + password + "\n\nThe support team");
     }
 
+    @Override
+    public void deleteUser(long id) throws CustomRuntimeException, IOException {
+        User user = userRepository.findById(id).orElse(null);
 
-    private List<Role> getRoleList(String roles) {
-        List<Long> roleIds;
-        try {
-            roleIds = Stream.of(roles.split(","))
-                    .map(String::trim)
-                    .map(Long::parseLong)
-                    .toList();
-        } catch (Exception e) {
-            throw new RuntimeException("Roles are invalid");
+        if (user == null) {
+            throw new CustomRuntimeException("User not found");
         }
 
-        if (roleIds.isEmpty()) {
-            throw new RuntimeException("Roles are invalid");
-        }
+        Path userFolder = Paths.get(FileConstant.USER_FOLDER + user.getUsername());
+        FileUtils.deleteDirectory(new File(userFolder.toString()));
 
-        return roleRepository.findAllById(roleIds);
+        userRepository.deleteById(id);
     }
 
-    private void deleteImage(String fileName) throws IOException {
-        if (fileName.equals("default.jpg")) {
-            return;
-        }
+    private void saveProfileImage(User user, MultipartFile profileImage) throws IOException {
+        if (profileImage != null) {
+            Path userFolder = Paths.get(FileConstant.USER_FOLDER + user.getUsername()).toAbsolutePath().normalize();
 
-        Path path = Path.of("upload/images/profile/" + fileName);
-        Files.deleteIfExists(path);
+            if (!Files.exists(userFolder)) {
+                Files.createDirectories(userFolder);
+            }
+
+            Files.deleteIfExists(Paths.get(userFolder + user.getUsername() + ".jpg"));
+            Files.copy(profileImage.getInputStream(), userFolder.resolve(user.getUsername() + ".jpg"), REPLACE_EXISTING);
+
+            user.setProfileImageUrl(ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path(FileConstant.USER_IMAGE_PATH + user.getUsername() + File.separator
+                    + user.getUsername() + ".jpg").toUriString());
+
+            userRepository.save(user);
+
+            LOGGER.info("Save file in file system by name: " + profileImage.getOriginalFilename());
+        }
     }
+
 }
